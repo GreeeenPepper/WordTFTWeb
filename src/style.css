@@ -1,0 +1,277 @@
+/* 全局CSS样式 */
+
+/* 颜色变量 */
+:root {
+  /* 主题颜色 */
+  --color-primary: #6c5ce7;
+  --color-primary-light: #8a6eff;
+  --color-primary-dark: #5549b6;
+  
+  --color-secondary: #ff7675;
+  --color-secondary-light: #ff9a8b;
+  --color-secondary-dark: #e06060;
+  
+  /* 浅色主题(默认) */
+  --color-bg: #f5f7fa;
+  --color-bg-light: #ffffff;
+  --color-bg-lighter: #edf2f7;
+  --color-text: #2d3748;
+  --color-text-light: #4a5568;
+  --color-border: #e2e8f0;
+  --color-border-dark: #cbd5e0;
+  
+  /* 稀有度颜色 - 浅色主题下稍微加深确保可见性 */
+  --color-rarity-common: #78909c;
+  --color-rarity-uncommon: #66bb6a;
+  --color-rarity-rare: #42a5f5;
+  --color-rarity-epic: #ab47bc;
+  --color-rarity-legendary: #ffb300;
+  --color-rarity-mythic: #f4511e;
+}
+
+/* 深色主题 */
+.dark-mode {
+  --color-bg: #1a202c;
+  --color-bg-light: #2d3748;
+  --color-bg-lighter: #3a4a61;
+  --color-text: #f7fafc;
+  --color-text-light: #e2e8f0;
+  --color-border: #4a5568;
+  --color-border-dark: #2d3748;
+  
+  /* 稀有度颜色 - 深色主题下更亮确保可见性 */
+  --color-rarity-common: #cfd8dc;
+  --color-rarity-uncommon: #a5d6a7;
+  --color-rarity-rare: #90caf9;
+  --color-rarity-epic: #ce93d8;
+  --color-rarity-legendary: #ffe082;
+  --color-rarity-mythic: #ffab91;
+}
+
+/* 基础样式 */
+html, body {
+  font-family: 'Roboto Mono', monospace;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Press Start 2P', cursive;
+  color: var(--color-text);
+  margin-top: 0;
+}
+
+p, span, div {
+  color: var(--color-text-light);
+}
+
+/* 主题切换按钮 */
+.theme-toggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle-icon {
+  font-size: 16px;
+}
+
+/* 通用类 */
+.text-shadow-sm {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.game-card {
+  background-color: var(--color-bg-light);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.game-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 扁平化按钮样式 */
+.btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  outline: none;
+  border: none;
+  text-align: center;
+  box-shadow: none;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-secondary-dark);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* 徽章样式 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 稀有度颜色 */
+.badge-common {
+  background-color: rgba(120, 144, 156, 0.2);
+  color: var(--color-rarity-common);
+}
+
+.badge-uncommon {
+  background-color: rgba(102, 187, 106, 0.2);
+  color: var(--color-rarity-uncommon);
+}
+
+.badge-rare {
+  background-color: rgba(66, 165, 245, 0.2);
+  color: var(--color-rarity-rare);
+}
+
+.badge-epic {
+  background-color: rgba(171, 71, 188, 0.2);
+  color: var(--color-rarity-epic);
+}
+
+.badge-legendary {
+  background-color: rgba(255, 179, 0, 0.2);
+  color: var(--color-rarity-legendary);
+}
+
+.badge-mythic {
+  background-color: rgba(244, 81, 30, 0.2);
+  color: var(--color-rarity-mythic);
+}
+
+/* 布局辅助类 */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.my-4 {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.p-4 {
+  padding: 16px;
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+.gap-4 {
+  gap: 16px;
+}
+
+.rounded-lg {
+  border-radius: 8px;
+}
+
+.shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-md {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-lg {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 动画 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
