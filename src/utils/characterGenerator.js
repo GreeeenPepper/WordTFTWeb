@@ -418,6 +418,83 @@ function generateCharacter(level = 1, rarity = 'common', isHero = true) {
     specialAbility.skills[0]
   ].slice(0, rarityData.maxModules);
   
+  // 将技能转换为包含详细信息的对象
+  const skillObjects = skills.map(skillName => {
+    // 根据技能名称推断技能类型
+    let type = 'attack';
+    if (skillName.includes('护盾') || skillName.includes('防御') || skillName.includes('护甲')) {
+      type = 'buff';
+    } else if (skillName.includes('治愈') || skillName.includes('治疗') || skillName.includes('恢复')) {
+      type = 'heal';
+    } else if (skillName.includes('削弱') || skillName.includes('虚弱') || skillName.includes('中毒')) {
+      type = 'debuff';
+    } else if (skillName.includes('火') || skillName.includes('烈焰')) {
+      type = 'fire';
+    } else if (skillName.includes('冰') || skillName.includes('霜')) {
+      type = 'ice';
+    } else if (skillName.includes('光') || skillName.includes('神圣')) {
+      type = 'light';
+    } else if (skillName.includes('暗') || skillName.includes('黑暗')) {
+      type = 'dark';
+    } else if (skillName.includes('电') || skillName.includes('雷')) {
+      type = 'lightning';
+    }
+
+    // 生成技能描述
+    let description = '';
+    if (type === 'attack') {
+      description = `对敌人造成强力的${skillName.includes('魔法') ? '魔法' : '物理'}伤害。`;
+    } else if (type === 'heal') {
+      description = `恢复友方单位的生命值。`;
+    } else if (type === 'buff') {
+      description = `提升友方单位的战斗能力。`;
+    } else if (type === 'debuff') {
+      description = `降低敌方单位的战斗能力。`;
+    } else if (type === 'fire') {
+      description = `释放火焰能量，对敌人造成灼烧伤害。`;
+    } else if (type === 'ice') {
+      description = `释放寒冰能量，对敌人造成冰冻伤害并减速。`;
+    } else if (type === 'light') {
+      description = `释放神圣能量，净化邪恶。`;
+    } else if (type === 'dark') {
+      description = `释放黑暗能量，吞噬生命。`;
+    } else if (type === 'lightning') {
+      description = `释放雷电能量，造成范围伤害。`;
+    }
+
+    // 生成技能效果
+    const effects = [];
+    if (type === 'attack') {
+      effects.push(`造成${100 + Math.floor(Math.random() * 50)}%攻击力的伤害`);
+      if (Math.random() > 0.7) effects.push('有几率造成暴击');
+    } else if (type === 'heal') {
+      effects.push(`恢复${80 + Math.floor(Math.random() * 70)}%魔法攻击力的生命值`);
+      if (Math.random() > 0.7) effects.push('对生命值低的目标效果更好');
+    } else if (type === 'buff') {
+      const statType = ['攻击力', '防御力', '速度', '暴击率'][Math.floor(Math.random() * 4)];
+      effects.push(`提高目标${15 + Math.floor(Math.random() * 20)}%${statType}`);
+      effects.push(`持续${1 + Math.floor(Math.random() * 3)}回合`);
+    } else if (type === 'debuff') {
+      const statType = ['攻击力', '防御力', '速度', '暴击率'][Math.floor(Math.random() * 4)];
+      effects.push(`降低目标${15 + Math.floor(Math.random() * 20)}%${statType}`);
+      effects.push(`持续${1 + Math.floor(Math.random() * 3)}回合`);
+    } else if (['fire', 'ice', 'light', 'dark', 'lightning'].includes(type)) {
+      effects.push(`造成${110 + Math.floor(Math.random() * 40)}%魔法攻击力的${type}属性伤害`);
+      if (type === 'fire') effects.push('目标有几率被灼烧');
+      if (type === 'ice') effects.push('目标有几率被减速');
+      if (type === 'light') effects.push('对亡灵敌人伤害提高50%');
+      if (type === 'dark') effects.push('吸取20%造成的伤害');
+      if (type === 'lightning') effects.push('有25%几率攻击随机的另一个敌人');
+    }
+
+    return {
+      name: skillName,
+      type: type,
+      description: description,
+      effects: effects
+    };
+  });
+  
   // 生成名称
   let name = '';
   if (isHero) {
@@ -461,7 +538,7 @@ function generateCharacter(level = 1, rarity = 'common', isHero = true) {
     combatStyle: combatStyle.name,
     description: `${race.description} ${characterClass.description}`,
     stats: baseStats,
-    skills,
+    skills: skillObjects,
     effects: [
       ...specialAbility.effects,
       ...combatStyle.effects

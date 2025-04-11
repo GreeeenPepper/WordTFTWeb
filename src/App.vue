@@ -234,6 +234,7 @@ export default {
               :key="hero.id || hero.name" 
               :character="hero"
               :is-owned="true"
+              :owned="true"
               @sell="sellHero"
               class="hero-card"
             />
@@ -348,7 +349,7 @@ export default {
           {{ getArtifactEmoji(artifact) }}
         </div>
       </div>
-      <p class="copyright">文字爬塔 TFT © 2023 - 融合Roguelike与自走棋的放置类游戏</p>
+      <p class="copyright">文字爬塔 - 融合Roguelike与自走棋的放置类游戏</p>
     </footer>
   </div>
 </template>

@@ -366,15 +366,34 @@ class BattleManager {
     const critChance = attacker.stats.crit / 100;
     const isCritical = Math.random() < critChance;
     
+    // 确定使用的技能名称
+    let skillName = '普通攻击';
+    let skill = null;
+    if (attacker.skills && attacker.skills.length > 0) {
+      // 随机选择一个技能
+      skill = attacker.skills[Math.floor(Math.random() * attacker.skills.length)];
+      skillName = typeof skill === 'string' ? skill : (skill.name || '技能');
+    }
+    
     if (isCritical) {
       damage = Math.floor(damage * 1.5);
-      this.addLog(`${attacker.name} 暴击了 ${target.name}，造成 ${damage} 点伤害！`, 'critical');
+      this.addLog(`${attacker.name} 使用 ${skillName} 暴击了 ${target.name}，造成 ${damage} 点伤害！`, 'critical');
     } else {
-      this.addLog(`${attacker.name} 攻击了 ${target.name}，造成 ${damage} 点伤害。`, 'damage');
+      this.addLog(`${attacker.name} 使用 ${skillName} 攻击了 ${target.name}，造成 ${damage} 点伤害。`, 'damage');
     }
     
     // 应用伤害
     this.applyDamage(target, damage);
+    
+    // 记录最后一次行动
+    this.battleState.lastAction = {
+      type: 'attack',
+      source: attacker,
+      target: target,
+      skill: skill && typeof skill === 'object' ? skill : { name: skillName, type: 'attack' },
+      damage: damage,
+      isCritical: isCritical
+    };
     
     // 检查是否触发特殊效果（基于角色特性）
     this.checkSpecialEffects(attacker, target, 'attack');
@@ -406,12 +425,14 @@ class BattleManager {
     if (!target) return;
     
     // 获取单位的特殊能力
-    const specialAbility = unit.specialAbility;
+    const specialAbility = unit.specialAbility || '';
     let abilityName = '特殊能力';
+    let skill = null;
     
     if (unit.skills && unit.skills.length > 0) {
       // 随机选择一个技能
-      abilityName = unit.skills[Math.floor(Math.random() * unit.skills.length)];
+      skill = unit.skills[Math.floor(Math.random() * unit.skills.length)];
+      abilityName = typeof skill === 'string' ? skill : (skill.name || '技能');
     }
     
     // 根据特殊能力类型执行不同效果
@@ -470,6 +491,15 @@ class BattleManager {
       this.addLog(`${unit.name} 使用 ${abilityName}，对 ${target.name} 造成 ${damage} 点伤害！`, 'special');
       this.applyDamage(target, damage);
     }
+    
+    // 记录最后一次行动
+    this.battleState.lastAction = {
+      type: 'special',
+      source: unit,
+      target: target,
+      skill: skill && typeof skill === 'object' ? skill : { name: abilityName, type: 'special' },
+      damage: 0  // 会在各个特殊能力中计算并应用
+    };
     
     // 设置特殊能力冷却
     unit.cooldowns = unit.cooldowns || {};

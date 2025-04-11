@@ -1,5 +1,5 @@
 <template>
-  <div class="character-card" :class="[rarityClass, { 'is-hero': character.isHero, 'is-compact': compact }]">
+  <div class="character-card" :class="[rarityClass, { 'is-hero': character.isHero, 'is-compact': compact, 'is-owned': owned }]">
     <div class="card-header">
       <h3 class="card-title" :style="{ color: character.rarityColor }">{{ character.name }}</h3>
       <div class="card-level-rarity">
@@ -10,7 +10,8 @@
       </div>
     </div>
     
-    <div class="card-info" v-if="!compact">
+    <!-- 非紧凑模式下的详细信息 -->
+    <div class="card-info" v-if="!compact && !owned">
       <div class="traits">
         <span class="trait">{{ character.race }}</span>
         <span class="trait">{{ character.class }}</span>
@@ -18,10 +19,47 @@
       <p class="description">{{ character.description }}</p>
     </div>
     
-    <div class="compact-info" v-else>
+    <!-- 紧凑模式下的信息（商店英雄） -->
+    <div class="compact-info" v-else-if="compact && !owned">
       <div class="compact-traits">
         <span class="trait">{{ character.race }}</span>
         <span class="trait">{{ character.class }}</span>
+      </div>
+      
+      <!-- 显示全部技能，不再截断 -->
+      <div class="compact-skills" v-if="character.skills && character.skills.length > 0">
+        <div v-for="(skill, index) in character.skills" :key="index" 
+          class="compact-skill"
+          @mouseover="showSkillTooltip(skill, $event)"
+          @mouseleave="hideSkillTooltip"
+        >
+          <span class="skill-name" :class="getSkillClass(skill)">
+            {{ skill.name || skill }}
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 已拥有英雄的精简布局 -->
+    <div class="owned-info" v-else-if="owned">
+      <div class="owned-header">
+        <div class="owned-traits">
+          <span class="trait">{{ character.race }}</span>
+          <span class="trait">{{ character.class }}</span>
+        </div>
+      </div>
+      
+      <!-- 已拥有英雄的精简技能显示 -->
+      <div class="owned-skills" v-if="character.skills && character.skills.length > 0">
+        <div v-for="(skill, index) in character.skills" :key="index" 
+          class="owned-skill"
+          @mouseover="showSkillTooltip(skill, $event)"
+          @mouseleave="hideSkillTooltip"
+        >
+          <span class="skill-name" :class="getSkillClass(skill)">
+            {{ skill.name || skill }}
+          </span>
+        </div>
       </div>
     </div>
     
@@ -51,10 +89,29 @@
     <div class="card-skills" v-if="!compact">
       <p class="skills-title">技能</p>
       <ul class="skills-list">
-        <li v-for="(skill, index) in character.skills" :key="index" class="skill">
-          {{ skill }}
+        <li v-for="(skill, index) in character.skills" :key="index" class="skill"
+          @mouseover="showSkillTooltip(skill, $event)"
+          @mouseleave="hideSkillTooltip"
+        >
+          <span class="skill-name" :class="getSkillClass(skill)">
+            {{ skill.name || skill }}
+          </span>
+          <span v-if="skill.type" class="skill-type">{{ getSkillTypeLabel(skill.type) }}</span>
         </li>
       </ul>
+    </div>
+    
+    <!-- 技能提示框 -->
+    <div v-if="activeSkillTooltip" class="skill-tooltip" :style="tooltipStyle">
+      <div class="tooltip-title" :class="getSkillClass(activeSkillTooltip)">
+        {{ activeSkillTooltip.name }}
+      </div>
+      <div class="tooltip-description">{{ activeSkillTooltip.description || '无描述' }}</div>
+      <div v-if="activeSkillTooltip.effects && activeSkillTooltip.effects.length > 0" class="tooltip-effects">
+        <div v-for="(effect, index) in activeSkillTooltip.effects" :key="index" class="tooltip-effect">
+          {{ effect }}
+        </div>
+      </div>
     </div>
     
     <div v-if="character.isHero && showActions" class="card-actions">
@@ -88,7 +145,18 @@ export default {
     compact: {
       type: Boolean,
       default: false
+    },
+    owned: {
+      type: Boolean,
+      default: false
     }
+  },
+  
+  data() {
+    return {
+      activeSkillTooltip: null,
+      tooltipStyle: {}
+    };
   },
   
   computed: {
@@ -108,6 +176,45 @@ export default {
     
     sellHero() {
       this.$emit('sell', this.character);
+    },
+    
+    showSkillTooltip(skill, event) {
+      this.activeSkillTooltip = skill;
+      this.tooltipStyle = {
+        left: `${event.clientX + 10}px`,
+        top: `${event.clientY + 10}px`
+      };
+      
+      // Emit event to parent component to show tooltip
+      this.$emit('show-skill-tooltip', skill, event);
+    },
+    
+    hideSkillTooltip() {
+      this.activeSkillTooltip = null;
+      
+      // Emit event to parent component to hide tooltip
+      this.$emit('hide-skill-tooltip');
+    },
+    
+    getSkillClass(skill) {
+      if (!skill || typeof skill === 'string') return '';
+      return `skill-type-${skill.type || 'default'}`;
+    },
+    
+    getSkillTypeLabel(type) {
+      const types = {
+        'attack': '攻击',
+        'heal': '治疗',
+        'buff': '增益',
+        'debuff': '减益',
+        'fire': '火焰',
+        'ice': '冰霜',
+        'light': '光明',
+        'dark': '暗影',
+        'lightning': '雷电'
+      };
+      
+      return types[type] || '特殊';
     }
   }
 }
@@ -134,7 +241,8 @@ export default {
 
 .is-compact {
   min-height: unset !important;
-  height: 300px;
+  height: auto;
+  min-height: 300px;
   width: 100%;
   max-width: 200px;
   align-self: center;
@@ -242,6 +350,35 @@ export default {
   margin-bottom: 8px;
 }
 
+.compact-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.compact-skill {
+  padding: 4px 6px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: all 0.2s;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+}
+
+.compact-skill:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.compact-skill-more {
+  font-size: 11px;
+  text-align: center;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
 .card-stats {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -306,18 +443,110 @@ export default {
 }
 
 .skill {
-  font-size: 14px;
-  padding: 4px 4px 4px 16px;
-  position: relative;
-  color: var(--color-text-light);
+  padding: 5px 8px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin-bottom: 6px;
+  transition: all 0.2s;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.skill::before {
-  content: '•';
-  color: var(--color-primary);
-  display: inline-block;
-  width: 16px;
-  margin-left: -16px;
+.skill:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.skill-name {
+  font-weight: 500;
+}
+
+.skill-type {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* 技能类型样式 */
+.skill-type-attack {
+  color: #f56565;
+}
+
+.skill-type-heal {
+  color: #48bb78;
+}
+
+.skill-type-buff {
+  color: #4299e1;
+}
+
+.skill-type-debuff {
+  color: #9f7aea;
+}
+
+.skill-type-fire {
+  color: #ed8936;
+}
+
+.skill-type-ice {
+  color: #90cdf4;
+}
+
+.skill-type-light {
+  color: #ecc94b;
+}
+
+.skill-type-dark {
+  color: #805ad5;
+}
+
+.skill-type-lightning {
+  color: #4fd1c5;
+}
+
+/* 工具提示样式 */
+.skill-tooltip {
+  position: fixed;
+  z-index: 1000;
+  background-color: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 280px;
+  pointer-events: none;
+}
+
+.tooltip-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-description {
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.tooltip-effects {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tooltip-effect {
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  color: #a0aec0;
 }
 
 .card-actions {
@@ -435,5 +664,59 @@ export default {
 
 :global(.dark-mode) .trait {
   background-color: var(--color-bg-light);
+}
+
+/* 已拥有英雄卡片的独特样式 */
+.is-owned {
+  min-height: 280px;
+  height: auto;
+  max-width: 220px;
+  box-shadow: 0 0 0 2px var(--color-primary);
+  background: linear-gradient(to bottom, var(--color-bg-light), var(--color-bg));
+}
+
+.is-owned:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.owned-info {
+  margin-bottom: 8px;
+}
+
+.owned-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.owned-traits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.owned-skills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.owned-skill {
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background-color: var(--color-bg-light);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 2px;
+}
+
+.owned-skill:hover {
+  background-color: var(--color-primary-light);
+  transform: translateY(-2px);
 }
 </style> 
